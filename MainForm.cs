@@ -158,16 +158,16 @@ namespace StyleChanger
                 }
 
                 var selected = dh.GetDrawingObjectSelector().GetSelected();
-                var view = _service.ResolveTargetView(selected);
-                if (view == null)
+                var views = _service.ResolveTargetViews(selected);
+                if (views.Count == 0)
                 {
                     SetResult("Zaznacz widok (albo obiekt w widoku) w Tekli i spróbuj ponownie.");
                     return;
                 }
 
-                var ok = _service.ApplyStyle(drawing, view, styleName, Log);
-                SetResult(ok
-                    ? $"Gotowe - zastosowano styl \"{styleName}\"."
+                var modified = _service.ApplyStyleToViews(drawing, views, styleName, Log);
+                SetResult(modified > 0
+                    ? $"Gotowe - zastosowano styl \"{styleName}\" na {modified}/{views.Count} widok(ach)."
                     : "Błąd - zobacz log.");
             }
             catch (Exception ex)
