@@ -210,9 +210,23 @@ https://github.com/HoldFort-Bananza/Tekla-Style-Changer (`dev`/`release`
 chronione, PR wymagany - patrz sekcja "Kontrola wersji" wyżej). `README.md`
 jest.
 
-**Instalator: świadomie odłożony** (operator, 2026-09-23: "bez instalatora
-na razie") - appka na razie działa tylko z `bin/x64/Debug/net48/` po
-zbudowaniu z sourców. Nie dodawać bez wyraźnej prośby.
+**Instalator: dodany (2026-09-23, PR #7)**, na wyraźną prośbę operatora
+(potrzeba wysłania appki współpracownikowi do testów). Wzorzec 1:1 z
+`RO-Axis-Dimension-Remover` i `Radius-Dimention-Mover` (ten sam katalog
+nadrzędny) - `installer/setup.iss` (Inno Setup) instaluje WYŁĄCZNIE własny
+`StyleChanger.exe`/`.exe.config`/`.pdb`, a po instalacji uruchamia
+`installer/fetch-dependencies.ps1`, który ściąga biblioteki Tekla Open API
+świeżo z nuget.org NA KOMPUTER UŻYTKOWNIKA - dokładnie to, co zrobiłby
+`dotnet restore`. Świadomie: zip z folderu `bin/` (z DLL-ami Tekli
+skopiowanymi tam przez NuGet) byłby redystrybucją zabronioną przez EULA
+Trimble (patrz `../CLAUDE.md`, zasada nr 2) - stąd ten wzorzec, nie
+najprostszy zip. `installer/TeklaEULA.txt` to oryginalna EULA Trimble,
+pokazywana operatorowi instalacji jako ekran licencji. Build instalatora:
+`ISCC.exe installer/setup.iss` (Inno Setup 6, zainstalowany lokalnie przez
+winget) - wynik ląduje w `installer/output/` (poza gitem, trafia do GitHub
+Releases). Zweryfikowane end-to-end: silent-install do katalogu
+testowego, `fetch-dependencies.ps1` poprawnie ściągnął wszystkie DLL-e,
+`StyleChanger.exe --diag-active` z tego katalogu połączył się z żywą Teklą.
 
 **Nazewnictwo: potwierdzone (2026-09-23).** Tytuł okna "Style Changer" i
 tekst przycisku "Pokaż sąsiadów" są finalne, operator potwierdził wprost -
