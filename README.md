@@ -20,10 +20,17 @@ Tekla Open API do już uruchomionej Tekli.
   (`Tekla.Structures`, `.Model`, `.Drawing` 2025.0.0) pobierają się z
   nuget.org, nie są redystrybuowane w tym repo (EULA Trimble tego zabrania).
 
-**Instalatora nie ma (świadomie, na życzenie operatora)** — appka działa
-wyłącznie zbudowana z sourców.
+## Instalacja przez instalator (dla użytkowników appki)
 
-## Instalacja (od zera)
+Najprościej: pobierz `StyleChanger-Setup-vX.X.X.exe` z
+[GitHub Releases](https://github.com/HoldFort-Bananza/Tekla-Style-Changer/releases)
+i uruchom. Instalator wymaga zaakceptowania EULA Trimble/Tekla (ekran
+licencji), bo po instalacji sam pobiera biblioteki Tekla Open API świeżo z
+nuget.org na Twój komputer — nie są dołączone do instalatora (nie wolno ich
+redystrybuować, patrz EULA). Wymaga internetu przy pierwszym uruchomieniu
+instalatora.
+
+## Instalacja od zera (do pracy nad kodem)
 
 ```
 git clone https://github.com/HoldFort-Bananza/Tekla-Style-Changer.git
@@ -36,6 +43,10 @@ Gotowy `StyleChanger.exe` ląduje w
 "Użycie" niżej). Przy pierwszym buildzie `dotnet` sam dociągnie z nuget.org
 wszystkie paczki Tekla Open API wymienione w `StyleChanger.csproj` — nie
 trzeba nic instalować ręcznie poza samym .NET SDK.
+
+Żeby samemu zbudować instalator: `installer/setup.iss` przez
+[Inno Setup](https://jrsoftware.org/isinfo.php) 6 (`ISCC.exe
+installer/setup.iss`), wynik ląduje w `installer/output/`.
 
 ## Build (przy kolejnych zmianach)
 
