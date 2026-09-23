@@ -107,10 +107,13 @@ API. Pliki:
 
 - Nazwa przycisku/appki robocza — do potwierdzenia z operatorem, jeśli
   będzie inna niż "Pokaż sąsiadów"/"Style Changer".
-- Obsługa wielokrotnego zaznaczenia (dziś: bierze pierwszy pasujący widok z
-  enumeratora, ignoruje resztę zaznaczenia bez komunikatu).
-- `.gitignore`, `README.md` — `.gitignore` jest, `README.md` jeszcze nie.
-- Repo nie jest jeszcze zainicjalizowane jako git.
+- ~~Obsługa wielokrotnego zaznaczenia~~ — zrobione 2026-09-23:
+  `ResolveTargetViews` zwraca WSZYSTKIE widoki z zaznaczenia (deduplikacja
+  po `Identifier.GUID`, bo `GetView()` może zwrócić nowy obiekt-wrapper dla
+  tego samego widoku co bezpośrednie zaznaczenie), `ApplyStyleToViews`
+  aplikuje styl na każdym i commituje raz na koniec. Zweryfikowane na żywo:
+  zaznaczenie dwóch widoków naraz na [35020] → oba dostały
+  `ViewExtensionForNeighbourParts=50` po jednym kliknięciu.
 
 ## Kontrola wersji - TWARDA ZASADA
 
