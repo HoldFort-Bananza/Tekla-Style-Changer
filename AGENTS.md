@@ -112,6 +112,26 @@ API. Pliki:
 - `.gitignore`, `README.md` — `.gitignore` jest, `README.md` jeszcze nie.
 - Repo nie jest jeszcze zainicjalizowane jako git.
 
+## Kontrola wersji - TWARDA ZASADA
+
+**Nigdy nie commitować/pushować bezpośrednio na `dev` ani `release`.**
+Zawsze: nowa gałąź tematyczna (`feature/...`, `fix/...`, `docs/...`) →
+commit(e) → `gh pr create` → merge PR-em. Repo:
+https://github.com/HoldFort-Bananza/Tekla-Style-Changer
+
+- `dev` - domyślna gałąź robocza (branch protection: PR wymagany,
+  `enforce_admins: true` - dotyczy też właściciela org, force-push i
+  usuwanie gałęzi zablokowane; 0 wymaganych review, bo to projekt
+  jednoosobowy - PR może zmergować sam autor, ale gałąź musi istnieć).
+- `release` - potwierdzony kod, te same zabezpieczenia co `dev`.
+- Ustawione 2026-09-23 przez `gh api .../branches/<nazwa>/protection`
+  (PUT) - jeśli trzeba kiedyś zmienić reguły ochrony, przez to samo API,
+  nie przez ręczne ustawienia w UI, żeby zostało udokumentowane, co się
+  zmieniło i kiedy.
+- Scalanie PR-a przez API bywa blokowane przez klasyfikator auto mode w
+  Claude Code (patrz `../CLAUDE.md`) - otwarcie PR-a przechodzi, merge
+  może wymagać kliknięcia przez operatora.
+
 ## Środowisko i konwencje
 
 Patrz `C:\Users\HFT-FJarosz\Projekty\CLAUDE.md` — obowiązuje w całości:
