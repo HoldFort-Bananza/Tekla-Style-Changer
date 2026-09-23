@@ -41,29 +41,43 @@ namespace StyleChanger
         /// widoku (np. wymiar, część) - wtedy bierzemy widok, w którym to
         /// leży. Operator może zaznaczyć kilka widoków (albo obiekty w kilku
         /// różnych widokach) naraz - każdy trafia do wyniku raz
-        /// (deduplikacja po Identifier.GUID, bo GetView() może zwrócić nowy
+        /// (deduplikacja po Identifier.ID, bo GetView() może zwrócić nowy
         /// obiekt-wrapper dla tego samego widoku co bezpośrednie zaznaczenie).
+        /// UWAGA: NIE po Identifier.GUID - zweryfikowane na żywo 2026-09-23,
+        /// dla obiektów View ta wartość to zawsze same zera niezależnie od
+        /// tego, który widok, więc wcześniejsza deduplikacja po GUID myliła
+        /// dwa różne widoki z jednym (przy dwóch zaznaczonych appka widziała
+        /// tylko pierwszy).
         /// </summary>
-        public List<View> ResolveTargetViews(DrawingObjectEnumerator selected)
+        public List<View> ResolveTargetViews(DrawingObjectEnumerator selected, Action<string> log)
         {
             var views = new List<View>();
-            var seenGuids = new HashSet<Guid>();
+            var seenIds = new HashSet<int>();
+            int rawCount = 0;
 
             while (selected.MoveNext())
             {
+                rawCount++;
                 var obj = selected.Current;
                 var view = obj is View v ? v : obj.GetView() as View;
                 if (view == null)
                 {
+                    log($"Zaznaczony obiekt #{rawCount} ({obj.GetType().Name}) nie ma powiązanego widoku - pomijam.");
                     continue;
                 }
 
-                if (seenGuids.Add(view.GetIdentifier().GUID))
+                var id = view.GetIdentifier().ID;
+                if (seenIds.Add(id))
                 {
                     views.Add(view);
                 }
+                else
+                {
+                    log($"Zaznaczony obiekt #{rawCount} wskazuje na widok z ID {id}, już mamy taki na liście - pomijam jako duplikat.");
+                }
             }
 
+            log($"Zaznaczenie: {rawCount} obiekt(ów) w edytorze -> {views.Count} unikalnych widok(ów) po deduplikacji.");
             return views;
         }
 
