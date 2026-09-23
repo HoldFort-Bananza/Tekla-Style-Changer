@@ -182,6 +182,22 @@ WSZYSTKIE widoki z zaznaczenia (deduplikacja po `Identifier.GUID`),
 zaznaczone widoki na [35020] → oba dostały `ViewExtensionForNeighbourParts
 =50` po jednym kliknięciu.
 
+**Bug w multi-selection znaleziony i naprawiony (2026-09-23, ten sam
+dzień).** Mimo testu wyżej, na rysunku `[35004]` przy dwóch zaznaczonych
+widokach appka konsekwentnie zgłaszała "1/1 widok(ach)" zamiast "2/2" -
+drugi widok zostawał nietknięty (`ViewExtensionForNeighbourParts=0`).
+Zweryfikowane na żywo przez tymczasowy log w `ResolveTargetViews`:
+**`view.GetIdentifier().GUID` dla obiektów `View` to zawsze same zera**
+(`00000000-0000-0000-0000-000000000000`) niezależnie od tego, który widok -
+w przeciwieństwie do obiektów modelu, GUID nie jest wypełniany dla
+widoków rysunkowych. Deduplikacja po GUID myliła więc dowolne dwa różne
+widoki z jednym i to zawsze pierwszy. Naprawione: klucz deduplikacji
+zmieniony na `Identifier.ID` (numeryczny, unikalny w obrębie rysunku).
+Po poprawce test na `[35004]` z dwoma zaznaczonymi widokami dał "2/2
+widok(ach)", oba widoki dostały rozszerzoną ramkę. **Wniosek na przyszłość:
+nie używać `Identifier.GUID` do identyfikacji obiektów `View` w Drawing
+API - nie jest unikalny.**
+
 **Trzeci test end-to-end przez GUI, 2026-09-23** (rysunek
 `99000000-35004-`, "Einzelteil Geländer", pozycja 35004): kliknięcie
 "Pokaż sąsiadów" na jednym zaznaczonym widoku → log appki: "Gotowe -

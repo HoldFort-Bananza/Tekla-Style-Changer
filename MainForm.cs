@@ -158,7 +158,7 @@ namespace StyleChanger
                 }
 
                 var selected = dh.GetDrawingObjectSelector().GetSelected();
-                var views = _service.ResolveTargetViews(selected);
+                var views = _service.ResolveTargetViews(selected, Log);
                 if (views.Count == 0)
                 {
                     SetResult("Zaznacz widok (albo obiekt w widoku) w Tekli i spróbuj ponownie.");
