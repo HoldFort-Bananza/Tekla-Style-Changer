@@ -14,8 +14,30 @@ Tekla Open API do już uruchomionej Tekli.
 
 - Tekla Structures 2025, uruchomiona i z otwartym modelem/rysunkiem.
 - Windows, .NET Framework 4.8 (instalowany razem z Teklą 2025).
+- .NET SDK (do budowania z sourców — `dotnet build` wymaga SDK, nie tylko
+  runtime'u; sprawdź `dotnet --version`).
+- Dostęp do internetu przy pierwszym buildzie — paczki Tekla Open API
+  (`Tekla.Structures`, `.Model`, `.Drawing` 2025.0.0) pobierają się z
+  nuget.org, nie są redystrybuowane w tym repo (EULA Trimble tego zabrania).
 
-## Build
+**Instalatora nie ma (świadomie, na życzenie operatora)** — appka działa
+wyłącznie zbudowana z sourców.
+
+## Instalacja (od zera)
+
+```
+git clone https://github.com/HoldFort-Bananza/Tekla-Style-Changer.git
+cd Tekla-Style-Changer
+dotnet build StyleChanger.csproj -c Debug -p:Platform=x64
+```
+
+Gotowy `StyleChanger.exe` ląduje w
+`bin\x64\Debug\net48\StyleChanger.exe` — stamtąd się go uruchamia (patrz
+"Użycie" niżej). Przy pierwszym buildzie `dotnet` sam dociągnie z nuget.org
+wszystkie paczki Tekla Open API wymienione w `StyleChanger.csproj` — nie
+trzeba nic instalować ręcznie poza samym .NET SDK.
+
+## Build (przy kolejnych zmianach)
 
 ```
 dotnet build StyleChanger.csproj -c Debug -p:Platform=x64
