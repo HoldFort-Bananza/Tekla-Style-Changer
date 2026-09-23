@@ -182,6 +182,13 @@ WSZYSTKIE widoki z zaznaczenia (deduplikacja po `Identifier.GUID`),
 zaznaczone widoki na [35020] → oba dostały `ViewExtensionForNeighbourParts
 =50` po jednym kliknięciu.
 
+**Trzeci test end-to-end przez GUI, 2026-09-23** (rysunek
+`99000000-35004-`, "Einzelteil Geländer", pozycja 35004): kliknięcie
+"Pokaż sąsiadów" na jednym zaznaczonym widoku → log appki: "Gotowe -
+zastosowano styl W_View_Railing_Neighbour na 1/1 widok(ach)", widoczna
+niebieska ramka z zakreskowaniem na zrzucie po kliknięciu, której nie było
+przed. Trzeci różny rysunek z potwierdzonym działaniem end-to-end.
+
 Repo git zainicjalizowane i podpięte:
 https://github.com/HoldFort-Bananza/Tekla-Style-Changer (`dev`/`release`
 chronione, PR wymagany - patrz sekcja "Kontrola wersji" wyżej). `README.md`
@@ -191,11 +198,9 @@ jest.
 na razie") - appka na razie działa tylko z `bin/x64/Debug/net48/` po
 zbudowaniu z sourców. Nie dodawać bez wyraźnej prośby.
 
-**Otwarte pytanie: nazewnictwo.** Operator NIE potwierdził jeszcze, czy
-tytuł okna "Style Changer" i tekst przycisku "Pokaż sąsiadów" mają zostać
-takie, czy ma być inaczej - pytanie zadane 2026-09-23, bez odpowiedzi
-(operator przeszedł do innego tematu). Zapytać ponownie przy okazji, nie
-zakładać, że brak odpowiedzi = akceptacja.
+**Nazewnictwo: potwierdzone (2026-09-23).** Tytuł okna "Style Changer" i
+tekst przycisku "Pokaż sąsiadów" są finalne, operator potwierdził wprost -
+nie pytać ponownie.
 
 `DiagRunner.cs` ma dodatkowo `--test-other-drawing` (SZUKA i PRZEŁĄCZA
 rysunki - operator wolał ręcznie wskazywać rysunek, więc w praktyce
