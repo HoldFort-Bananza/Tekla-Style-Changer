@@ -28,11 +28,14 @@ Jeśli appka jest uruchomiona, zamknij ją przed przebudowaniem
 ## Użycie
 
 1. Uruchom `StyleChanger.exe`.
-2. W Tekli zaznacz widok (albo obiekt w widoku) w otwartym rysunku.
+2. W Tekli zaznacz widok (albo obiekt w widoku, np. wymiar czy część) w
+   otwartym rysunku — można zaznaczyć kilka widoków naraz, styl zostanie
+   zaaplikowany na każdym z nich.
 3. W oknie appki wybierz styl z listy (domyślnie zaznaczony
    `W_View_Railing_Neighbour`) i kliknij **"Pokaż sąsiadów"**.
-4. Wynik (sukces albo błąd) pojawia się w logu w oknie appki. Zmiana jest
-   od razu zapisana w rysunku i odwracalna przez Ctrl+Z w Tekli.
+4. Wynik (sukces albo błąd, z liczbą zmienionych widoków) pojawia się w
+   logu w oknie appki. Zmiana jest od razu zapisana w rysunku i odwracalna
+   przez Ctrl+Z w Tekli.
 
 ## Diagnostyka bez GUI
 
@@ -51,6 +54,14 @@ StyleChanger.exe --dump-style <nazwa-stylu-bez-rozszerzenia>
 
 Wczytuje wskazany plik `.vi` do izolowanego obiektu w pamięci i wypisuje
 jego zawartość — też tylko do odczytu.
+
+## Praca nad kodem
+
+Repo: https://github.com/HoldFort-Bananza/Tekla-Style-Changer. Gałęzie
+`dev` (robocza) i `release` są chronione na GitHubie — **nigdy nie
+commituj/pushuj bezpośrednio na nie**. Zawsze: nowa gałąź
+(`feature/...`/`fix/...`/`docs/...`) → commit → `gh pr create` → merge
+przez PR. Szczegóły w [AGENTS.md](AGENTS.md).
 
 ## Więcej
 

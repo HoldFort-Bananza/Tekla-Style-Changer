@@ -175,10 +175,33 @@ po kliknięciu (podejrzenie: Tekla na chwilę przejmuje fokus w trakcie
 - patrz też pamięć `feedback_log_everything` (operator: "log jest poto żeby
 logować, ma logować wszystko").
 
-Brak repo git. Brak `README.md`. Brak instalatora (RO Axis Dimension
-Remover ma wzorzec Inno Setup w `installer/` — do rozważenia, gdy appka
-będzie gotowa do dystrybucji na inne stanowiska). `DiagRunner.cs` ma teraz
-też `--test-other-drawing` (SZUKA i PRZEŁĄCZA rysunki - operator wolał
-ręcznie wskazywać rysunek, więc w praktyce nieużywane, ale zostaje jako
-dostępna opcja) i `--dump-style <nazwa>` (bezpieczny odczyt zawartości
-pliku .vi).
+**Obsługa wielokrotnego zaznaczenia — zrobione i zweryfikowane na żywo**
+(2026-09-23, PR #2, zmergowany do `dev`): `ResolveTargetViews` zbiera
+WSZYSTKIE widoki z zaznaczenia (deduplikacja po `Identifier.GUID`),
+`ApplyStyleToViews` aplikuje styl na każdym i commituje raz. Test: dwa
+zaznaczone widoki na [35020] → oba dostały `ViewExtensionForNeighbourParts
+=50` po jednym kliknięciu.
+
+Repo git zainicjalizowane i podpięte:
+https://github.com/HoldFort-Bananza/Tekla-Style-Changer (`dev`/`release`
+chronione, PR wymagany - patrz sekcja "Kontrola wersji" wyżej). `README.md`
+jest.
+
+**Instalator: świadomie odłożony** (operator, 2026-09-23: "bez instalatora
+na razie") - appka na razie działa tylko z `bin/x64/Debug/net48/` po
+zbudowaniu z sourców. Nie dodawać bez wyraźnej prośby.
+
+**Otwarte pytanie: nazewnictwo.** Operator NIE potwierdził jeszcze, czy
+tytuł okna "Style Changer" i tekst przycisku "Pokaż sąsiadów" mają zostać
+takie, czy ma być inaczej - pytanie zadane 2026-09-23, bez odpowiedzi
+(operator przeszedł do innego tematu). Zapytać ponownie przy okazji, nie
+zakładać, że brak odpowiedzi = akceptacja.
+
+`DiagRunner.cs` ma dodatkowo `--test-other-drawing` (SZUKA i PRZEŁĄCZA
+rysunki - operator wolał ręcznie wskazywać rysunek, więc w praktyce
+nieużywane, ale zostaje jako dostępna opcja) i `--dump-style <nazwa>`
+(bezpieczny odczyt zawartości pliku .vi).
+
+**2026-09-23: operator przenosi się na inne narzędzie ("T3 Code")** do
+dalszej pracy nad tym repo. Ten plik + `README.md` mają być samowystarczalną
+bazą wiedzy dla sesji w innym narzędziu, które nie widziało tej rozmowy.
