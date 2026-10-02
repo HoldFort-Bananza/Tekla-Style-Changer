@@ -14,8 +14,41 @@ Tekla Open API do już uruchomionej Tekli.
 
 - Tekla Structures 2025, uruchomiona i z otwartym modelem/rysunkiem.
 - Windows, .NET Framework 4.8 (instalowany razem z Teklą 2025).
+- .NET SDK (do budowania z sourców — `dotnet build` wymaga SDK, nie tylko
+  runtime'u; sprawdź `dotnet --version`).
+- Dostęp do internetu przy pierwszym buildzie — paczki Tekla Open API
+  (`Tekla.Structures`, `.Model`, `.Drawing` 2025.0.0) pobierają się z
+  nuget.org, nie są redystrybuowane w tym repo (EULA Trimble tego zabrania).
 
-## Build
+## Instalacja przez instalator (dla użytkowników appki)
+
+Najprościej: pobierz `StyleChanger-Setup-vX.X.X.exe` z
+[GitHub Releases](https://github.com/HoldFort-Bananza/Tekla-Style-Changer/releases)
+i uruchom. Instalator wymaga zaakceptowania EULA Trimble/Tekla (ekran
+licencji), bo po instalacji sam pobiera biblioteki Tekla Open API świeżo z
+nuget.org na Twój komputer — nie są dołączone do instalatora (nie wolno ich
+redystrybuować, patrz EULA). Wymaga internetu przy pierwszym uruchomieniu
+instalatora.
+
+## Instalacja od zera (do pracy nad kodem)
+
+```
+git clone https://github.com/HoldFort-Bananza/Tekla-Style-Changer.git
+cd Tekla-Style-Changer
+dotnet build StyleChanger.csproj -c Debug -p:Platform=x64
+```
+
+Gotowy `StyleChanger.exe` ląduje w
+`bin\x64\Debug\net48\StyleChanger.exe` — stamtąd się go uruchamia (patrz
+"Użycie" niżej). Przy pierwszym buildzie `dotnet` sam dociągnie z nuget.org
+wszystkie paczki Tekla Open API wymienione w `StyleChanger.csproj` — nie
+trzeba nic instalować ręcznie poza samym .NET SDK.
+
+Żeby samemu zbudować instalator: `installer/setup.iss` przez
+[Inno Setup](https://jrsoftware.org/isinfo.php) 6 (`ISCC.exe
+installer/setup.iss`), wynik ląduje w `installer/output/`.
+
+## Build (przy kolejnych zmianach)
 
 ```
 dotnet build StyleChanger.csproj -c Debug -p:Platform=x64
@@ -28,11 +61,14 @@ Jeśli appka jest uruchomiona, zamknij ją przed przebudowaniem
 ## Użycie
 
 1. Uruchom `StyleChanger.exe`.
-2. W Tekli zaznacz widok (albo obiekt w widoku) w otwartym rysunku.
+2. W Tekli zaznacz widok (albo obiekt w widoku, np. wymiar czy część) w
+   otwartym rysunku — można zaznaczyć kilka widoków naraz, styl zostanie
+   zaaplikowany na każdym z nich.
 3. W oknie appki wybierz styl z listy (domyślnie zaznaczony
    `W_View_Railing_Neighbour`) i kliknij **"Pokaż sąsiadów"**.
-4. Wynik (sukces albo błąd) pojawia się w logu w oknie appki. Zmiana jest
-   od razu zapisana w rysunku i odwracalna przez Ctrl+Z w Tekli.
+4. Wynik (sukces albo błąd, z liczbą zmienionych widoków) pojawia się w
+   logu w oknie appki. Zmiana jest od razu zapisana w rysunku i odwracalna
+   przez Ctrl+Z w Tekli.
 
 ## Diagnostyka bez GUI
 
@@ -51,6 +87,14 @@ StyleChanger.exe --dump-style <nazwa-stylu-bez-rozszerzenia>
 
 Wczytuje wskazany plik `.vi` do izolowanego obiektu w pamięci i wypisuje
 jego zawartość — też tylko do odczytu.
+
+## Praca nad kodem
+
+Repo: https://github.com/HoldFort-Bananza/Tekla-Style-Changer. Gałęzie
+`dev` (robocza) i `release` są chronione na GitHubie — **nigdy nie
+commituj/pushuj bezpośrednio na nie**. Zawsze: nowa gałąź
+(`feature/...`/`fix/...`/`docs/...`) → commit → `gh pr create` → merge
+przez PR. Szczegóły w [AGENTS.md](AGENTS.md).
 
 ## Więcej
 

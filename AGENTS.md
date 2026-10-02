@@ -107,10 +107,33 @@ API. Pliki:
 
 - Nazwa przycisku/appki robocza — do potwierdzenia z operatorem, jeśli
   będzie inna niż "Pokaż sąsiadów"/"Style Changer".
-- Obsługa wielokrotnego zaznaczenia (dziś: bierze pierwszy pasujący widok z
-  enumeratora, ignoruje resztę zaznaczenia bez komunikatu).
-- `.gitignore`, `README.md` — `.gitignore` jest, `README.md` jeszcze nie.
-- Repo nie jest jeszcze zainicjalizowane jako git.
+- ~~Obsługa wielokrotnego zaznaczenia~~ — zrobione 2026-09-23:
+  `ResolveTargetViews` zwraca WSZYSTKIE widoki z zaznaczenia (deduplikacja
+  po `Identifier.GUID`, bo `GetView()` może zwrócić nowy obiekt-wrapper dla
+  tego samego widoku co bezpośrednie zaznaczenie), `ApplyStyleToViews`
+  aplikuje styl na każdym i commituje raz na koniec. Zweryfikowane na żywo:
+  zaznaczenie dwóch widoków naraz na [35020] → oba dostały
+  `ViewExtensionForNeighbourParts=50` po jednym kliknięciu.
+
+## Kontrola wersji - TWARDA ZASADA
+
+**Nigdy nie commitować/pushować bezpośrednio na `dev` ani `release`.**
+Zawsze: nowa gałąź tematyczna (`feature/...`, `fix/...`, `docs/...`) →
+commit(e) → `gh pr create` → merge PR-em. Repo:
+https://github.com/HoldFort-Bananza/Tekla-Style-Changer
+
+- `dev` - domyślna gałąź robocza (branch protection: PR wymagany,
+  `enforce_admins: true` - dotyczy też właściciela org, force-push i
+  usuwanie gałęzi zablokowane; 0 wymaganych review, bo to projekt
+  jednoosobowy - PR może zmergować sam autor, ale gałąź musi istnieć).
+- `release` - potwierdzony kod, te same zabezpieczenia co `dev`.
+- Ustawione 2026-09-23 przez `gh api .../branches/<nazwa>/protection`
+  (PUT) - jeśli trzeba kiedyś zmienić reguły ochrony, przez to samo API,
+  nie przez ręczne ustawienia w UI, żeby zostało udokumentowane, co się
+  zmieniło i kiedy.
+- Scalanie PR-a przez API bywa blokowane przez klasyfikator auto mode w
+  Claude Code (patrz `../CLAUDE.md`) - otwarcie PR-a przechodzi, merge
+  może wymagać kliknięcia przez operatora.
 
 ## Środowisko i konwencje
 
@@ -152,10 +175,68 @@ po kliknięciu (podejrzenie: Tekla na chwilę przejmuje fokus w trakcie
 - patrz też pamięć `feedback_log_everything` (operator: "log jest poto żeby
 logować, ma logować wszystko").
 
-Brak repo git. Brak `README.md`. Brak instalatora (RO Axis Dimension
-Remover ma wzorzec Inno Setup w `installer/` — do rozważenia, gdy appka
-będzie gotowa do dystrybucji na inne stanowiska). `DiagRunner.cs` ma teraz
-też `--test-other-drawing` (SZUKA i PRZEŁĄCZA rysunki - operator wolał
-ręcznie wskazywać rysunek, więc w praktyce nieużywane, ale zostaje jako
-dostępna opcja) i `--dump-style <nazwa>` (bezpieczny odczyt zawartości
-pliku .vi).
+**Obsługa wielokrotnego zaznaczenia — zrobione i zweryfikowane na żywo**
+(2026-09-23, PR #2, zmergowany do `dev`): `ResolveTargetViews` zbiera
+WSZYSTKIE widoki z zaznaczenia (deduplikacja po `Identifier.GUID`),
+`ApplyStyleToViews` aplikuje styl na każdym i commituje raz. Test: dwa
+zaznaczone widoki na [35020] → oba dostały `ViewExtensionForNeighbourParts
+=50` po jednym kliknięciu.
+
+**Bug w multi-selection znaleziony i naprawiony (2026-09-23, ten sam
+dzień).** Mimo testu wyżej, na rysunku `[35004]` przy dwóch zaznaczonych
+widokach appka konsekwentnie zgłaszała "1/1 widok(ach)" zamiast "2/2" -
+drugi widok zostawał nietknięty (`ViewExtensionForNeighbourParts=0`).
+Zweryfikowane na żywo przez tymczasowy log w `ResolveTargetViews`:
+**`view.GetIdentifier().GUID` dla obiektów `View` to zawsze same zera**
+(`00000000-0000-0000-0000-000000000000`) niezależnie od tego, który widok -
+w przeciwieństwie do obiektów modelu, GUID nie jest wypełniany dla
+widoków rysunkowych. Deduplikacja po GUID myliła więc dowolne dwa różne
+widoki z jednym i to zawsze pierwszy. Naprawione: klucz deduplikacji
+zmieniony na `Identifier.ID` (numeryczny, unikalny w obrębie rysunku).
+Po poprawce test na `[35004]` z dwoma zaznaczonymi widokami dał "2/2
+widok(ach)", oba widoki dostały rozszerzoną ramkę. **Wniosek na przyszłość:
+nie używać `Identifier.GUID` do identyfikacji obiektów `View` w Drawing
+API - nie jest unikalny.**
+
+**Trzeci test end-to-end przez GUI, 2026-09-23** (rysunek
+`99000000-35004-`, "Einzelteil Geländer", pozycja 35004): kliknięcie
+"Pokaż sąsiadów" na jednym zaznaczonym widoku → log appki: "Gotowe -
+zastosowano styl W_View_Railing_Neighbour na 1/1 widok(ach)", widoczna
+niebieska ramka z zakreskowaniem na zrzucie po kliknięciu, której nie było
+przed. Trzeci różny rysunek z potwierdzonym działaniem end-to-end.
+
+Repo git zainicjalizowane i podpięte:
+https://github.com/HoldFort-Bananza/Tekla-Style-Changer (`dev`/`release`
+chronione, PR wymagany - patrz sekcja "Kontrola wersji" wyżej). `README.md`
+jest.
+
+**Instalator: dodany (2026-09-23, PR #7)**, na wyraźną prośbę operatora
+(potrzeba wysłania appki współpracownikowi do testów). Wzorzec 1:1 z
+`RO-Axis-Dimension-Remover` i `Radius-Dimention-Mover` (ten sam katalog
+nadrzędny) - `installer/setup.iss` (Inno Setup) instaluje WYŁĄCZNIE własny
+`StyleChanger.exe`/`.exe.config`/`.pdb`, a po instalacji uruchamia
+`installer/fetch-dependencies.ps1`, który ściąga biblioteki Tekla Open API
+świeżo z nuget.org NA KOMPUTER UŻYTKOWNIKA - dokładnie to, co zrobiłby
+`dotnet restore`. Świadomie: zip z folderu `bin/` (z DLL-ami Tekli
+skopiowanymi tam przez NuGet) byłby redystrybucją zabronioną przez EULA
+Trimble (patrz `../CLAUDE.md`, zasada nr 2) - stąd ten wzorzec, nie
+najprostszy zip. `installer/TeklaEULA.txt` to oryginalna EULA Trimble,
+pokazywana operatorowi instalacji jako ekran licencji. Build instalatora:
+`ISCC.exe installer/setup.iss` (Inno Setup 6, zainstalowany lokalnie przez
+winget) - wynik ląduje w `installer/output/` (poza gitem, trafia do GitHub
+Releases). Zweryfikowane end-to-end: silent-install do katalogu
+testowego, `fetch-dependencies.ps1` poprawnie ściągnął wszystkie DLL-e,
+`StyleChanger.exe --diag-active` z tego katalogu połączył się z żywą Teklą.
+
+**Nazewnictwo: potwierdzone (2026-09-23).** Tytuł okna "Style Changer" i
+tekst przycisku "Pokaż sąsiadów" są finalne, operator potwierdził wprost -
+nie pytać ponownie.
+
+`DiagRunner.cs` ma dodatkowo `--test-other-drawing` (SZUKA i PRZEŁĄCZA
+rysunki - operator wolał ręcznie wskazywać rysunek, więc w praktyce
+nieużywane, ale zostaje jako dostępna opcja) i `--dump-style <nazwa>`
+(bezpieczny odczyt zawartości pliku .vi).
+
+**2026-09-23: operator przenosi się na inne narzędzie ("T3 Code")** do
+dalszej pracy nad tym repo. Ten plik + `README.md` mają być samowystarczalną
+bazą wiedzy dla sesji w innym narzędziu, które nie widziało tej rozmowy.

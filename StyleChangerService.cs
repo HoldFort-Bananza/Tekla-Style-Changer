@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Tekla.Structures;
 using Tekla.Structures.Drawing;
+using Tekla.Structures.DrawingInternal;
 
 namespace StyleChanger
 {
@@ -35,61 +36,97 @@ namespace StyleChanger
         }
 
         /// <summary>
-        /// Znajduje widok powiązany z aktualnym zaznaczeniem w edytorze:
-        /// albo sam zaznaczony obiekt jest widokiem, albo bierzemy widok,
-        /// w którym leży pierwszy zaznaczony obiekt innego typu (np. wymiar).
+        /// Znajduje WSZYSTKIE widoki powiązane z aktualnym zaznaczeniem w
+        /// edytorze: zaznaczony obiekt to albo sam widok, albo coś w środku
+        /// widoku (np. wymiar, część) - wtedy bierzemy widok, w którym to
+        /// leży. Operator może zaznaczyć kilka widoków (albo obiekty w kilku
+        /// różnych widokach) naraz - każdy trafia do wyniku raz
+        /// (deduplikacja po Identifier.ID, bo GetView() może zwrócić nowy
+        /// obiekt-wrapper dla tego samego widoku co bezpośrednie zaznaczenie).
+        /// UWAGA: NIE po Identifier.GUID - zweryfikowane na żywo 2026-09-23,
+        /// dla obiektów View ta wartość to zawsze same zera niezależnie od
+        /// tego, który widok, więc wcześniejsza deduplikacja po GUID myliła
+        /// dwa różne widoki z jednym (przy dwóch zaznaczonych appka widziała
+        /// tylko pierwszy).
         /// </summary>
-        public View ResolveTargetView(DrawingObjectEnumerator selected)
+        public List<View> ResolveTargetViews(DrawingObjectEnumerator selected, Action<string> log)
         {
+            var views = new List<View>();
+            var seenIds = new HashSet<int>();
+            int rawCount = 0;
+
             while (selected.MoveNext())
             {
+                rawCount++;
                 var obj = selected.Current;
-                if (obj is View directView)
+                var view = obj is View v ? v : obj.GetView() as View;
+                if (view == null)
                 {
-                    return directView;
+                    log($"Zaznaczony obiekt #{rawCount} ({obj.GetType().Name}) nie ma powiązanego widoku - pomijam.");
+                    continue;
                 }
 
-                if (obj.GetView() is View containingView)
+                var id = view.GetIdentifier().ID;
+                if (seenIds.Add(id))
                 {
-                    return containingView;
+                    views.Add(view);
+                }
+                else
+                {
+                    log($"Zaznaczony obiekt #{rawCount} wskazuje na widok z ID {id}, już mamy taki na liście - pomijam jako duplikat.");
                 }
             }
 
-            return null;
+            log($"Zaznaczenie: {rawCount} obiekt(ów) w edytorze -> {views.Count} unikalnych widok(ów) po deduplikacji.");
+            return views;
         }
 
         /// <summary>
-        /// Aplikuje nazwany styl (plik .vi) na wskazany widok i zapisuje
-        /// zmianę. Zwraca false przy niepowodzeniu - powód trafia do logu,
-        /// nie jest przełykany po cichu.
+        /// Aplikuje nazwany styl (plik .vi) na wskazane widoki i zapisuje
+        /// zmianę JEDNYM CommitChanges() dla całego rysunku. Zwraca liczbę
+        /// widoków, na które styl faktycznie się zaaplikował - niepowodzenia
+        /// pojedynczych widoków trafiają do logu i nie przerywają reszty.
         /// </summary>
-        public bool ApplyStyle(Drawing drawing, View view, string styleName, Action<string> log)
+        public int ApplyStyleToViews(Drawing drawing, IReadOnlyList<View> views, string styleName, Action<string> log)
         {
-            try
+            int modified = 0;
+            foreach (var view in views)
             {
-                view.Attributes = new View.ViewAttributes(styleName);
-            }
-            catch (Exception ex)
-            {
-                log($"Nie udało się wczytać stylu \"{styleName}\": {ex.Message}");
-                return false;
+                try
+                {
+                    view.Attributes = new View.ViewAttributes(styleName);
+                }
+                catch (Exception ex)
+                {
+                    log($"Nie udało się wczytać stylu \"{styleName}\" dla widoku \"{view.Name}\": {ex.Message}");
+                    continue;
+                }
+
+                if (!view.Modify())
+                {
+                    log($"Widok.Modify() zwróciło false dla widoku \"{view.Name}\" - pomijam.");
+                    continue;
+                }
+
+                modified++;
             }
 
-            if (!view.Modify())
+            if (modified == 0)
             {
-                log("Widok.Modify() zwróciło false - zmiana nie została zastosowana.");
-                return false;
+                return 0;
             }
 
             // TransactionManager nie dotyczy obiektów rysunkowych - zmianę
-            // utrwala CommitChanges() na rysunku, patrz ../CLAUDE.md.
+            // utrwala CommitChanges() na rysunku, patrz ../CLAUDE.md. Jedno
+            // wywołanie na koniec zapisuje wszystkie zmodyfikowane widoki
+            // naraz, zamiast commitować po każdym z osobna.
             if (!drawing.CommitChanges())
             {
-                log("Drawing.CommitChanges() zwróciło false - zmiana mogła nie zostać zapisana.");
-                return false;
+                log("Drawing.CommitChanges() zwróciło false - zmiany mogły nie zostać zapisane.");
+                return 0;
             }
 
-            return true;
+            return modified;
         }
     }
 }

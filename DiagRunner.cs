@@ -279,7 +279,8 @@ namespace StyleChanger
             selector.SelectObject(targetView);
 
             var service = new StyleChangerService();
-            var ok = service.ApplyStyle(target, targetView, StyleChangerService.DefaultStyleName, Log);
+            var modified = service.ApplyStyleToViews(target, new List<View> { targetView }, StyleChangerService.DefaultStyleName, Log);
+            var ok = modified > 0;
             Log(ok
                 ? $"OK: styl \"{StyleChangerService.DefaultStyleName}\" zastosowany na [{target.Mark}] {target.Name}."
                 : $"NIEUDANE zastosowanie stylu na [{target.Mark}] {target.Name} - patrz log wyżej.");
